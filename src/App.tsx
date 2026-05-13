@@ -84,9 +84,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  // In a real app we might want to show this to the user
-  alert(`Xatolik (${operationType}): ` + (error instanceof Error ? error.message : "Noma'lum xatolik"));
-  throw new Error(JSON.stringify(errInfo));
+  // Not throwing to avoid hard crashing the entire app if a single listener fails
 }
 
 async function testConnection() {
@@ -245,10 +243,17 @@ export default function App() {
 
     const userData = localStorage.getItem('sbt_user_data');
     if (userData) {
-      const data = JSON.parse(userData);
-      const cleanName = data.company.toUpperCase().trim().replace(/\s+/g, ' ');
-      setCompanyName(cleanName);
-      setIsLogged(true);
+      try {
+        const data = JSON.parse(userData);
+        if (data && data.company) {
+          const cleanName = data.company.toUpperCase().trim().replace(/\s+/g, ' ');
+          setCompanyName(cleanName);
+          setIsLogged(true);
+        }
+      } catch (e) {
+        console.error("Storage parse error:", e);
+        localStorage.removeItem('sbt_user_data');
+      }
     }
   }, []);
 
