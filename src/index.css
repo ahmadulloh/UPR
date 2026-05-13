@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand: #0066cc;
+  --color-brand-gh: #e8f0fb;
+  --color-success: #1a7a3e;
+  --color-danger: #c0392b;
+  --color-warning: #b45309;
+  --color-border: #dde1e9;
+  --color-bg: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-sidebar: #1c2333;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-gray-900 antialiased font-sans text-sm;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-brand text-white hover:bg-blue-700;
+  }
+  .btn-secondary {
+    @apply bg-white border border-border text-gray-700 hover:bg-gray-50;
+  }
+  .btn-accent {
+    @apply bg-[#ffe580] text-gray-900 border border-[#e5c800] hover:bg-[#ffd700];
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 bg-white border border-border rounded-md outline-none focus:border-brand transition-colors text-sm;
+  }
+  
+  .card {
+    @apply bg-white border border-border rounded-lg overflow-hidden;
+  }
+  
+  .table-header {
+    @apply bg-gray-100 border-b border-border text-left font-bold text-[11px] uppercase tracking-wider text-gray-600;
+  }
+}
+
+@media print {
+  aside, header, .print\:hidden, button, .btn {
+    display: none !important;
+  }
+  
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+  
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  
+  th, td {
+    border: 1px solid #ddd !important;
+  }
+}
+

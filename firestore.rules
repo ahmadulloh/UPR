@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Connectivity Test
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // 3. Global Helpers
+    function isApproved(companyId) {
+      return exists(/databases/$(database)/documents/access_control/$(companyId)) && 
+             get(/databases/$(database)/documents/access_control/$(companyId)).data.status == 'approved';
+    }
+
+    // 4. Access Control (The Gatekeeper)
+    // Allows anyone to request access (create a doc) or check their status (get a doc)
+    match /access_control/{companyId} {
+      allow read, write: if true;
+    }
+    
+    // Allow listing for the admin panel search/view
+    match /access_control {
+       allow list, read: if true;
+    }
+
+    // 5. Business Data
+    // Logic: User must know the companyId and it must be approved.
+    match /companies/{companyId}/{document=**} {
+      allow read, write: if isApproved(companyId);
+    }
+  }
+}

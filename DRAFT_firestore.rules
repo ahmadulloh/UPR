@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return true; // We use custom company-based auth, so "isSignedIn" is always true for the client
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Access Control collection
+    match /access_control/{companyId} {
+      allow read: if isValidId(companyId);
+      allow create: if isValidId(companyId) 
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasAll(['company', 'passwordHint', 'status', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().size() == 5;
+      
+      allow update: if isValidId(companyId)
+        && (
+          // Admin can approve
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']))
+        );
+      
+      allow delete: if false; // Only via Firebase console or Admin SDK
+    }
+
+    // Company specific data
+    match /companies/{companyId}/{collectionName}/{docId} {
+      // Logic: Allow access if the company is approved in access_control
+      // WARNING: This check is expensive (get() call). 
+      // But since we don't use Firebase Auth, we verify the company exists.
+      
+      function isApproved() {
+        return get(/databases/$(database)/documents/access_control/$(companyId)).data.status == 'approved';
+      }
+
+      allow read: if isValidId(companyId) && isApproved();
+      allow write: if isValidId(companyId) && isApproved() && isValidId(docId);
+    }
+  }
+}
